@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  node-app:
+    build: .
+    restart: always
+    depends_on:
+      - mongo_db
+      - redis
+    ports:
+      - '${PORT}:8080'
+    volumes:
+      - /app/node_modules
+      - .:/app
+    environment:
+      # - REDIS_URL=redis://redis:6379
+      # - MONGODB_URI=mongodb://admin2:adminpassword@mongo_db:27017/todo_db
+      - REDIS_URL=${REDIS_URL}
+      - MONGODB_URI=${MONGODB_URI}
+  mongo_db:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE}
+    volumes:
+      - mongo_db_data:/data/db
+      - ./scripts:/docker-entrypoint-initdb.d
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    depends_on:
+      - mongo_db
+    ports:
+      - '${MONGO_EXPRESS_PORT}:8081'
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongo_db
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGODB_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGODB_ROOT_PASSWORD}
+      ME_CONFIG_BASICAUTH: false
+
+  redis:
+    image: redis:latest
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongo_db_data:
+  redis_data:
