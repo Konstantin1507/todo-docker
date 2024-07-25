@@ -1,19 +1,29 @@
 import { createClient } from 'redis';
 
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+const redisUrl =
+  process.env.NODE_ENV === 'test'
+    ? process.env.REDIS_URL_TEST
+    : process.env.REDIS_URL;
 
 const redisClient = createClient({
   url: redisUrl,
 });
 
-redisClient.on('error', (err) => console.log('Redis Client Error', err));
+const connectToRedis = async () => {
+  if (!redisClient.isOpen) {
+    await redisClient.connect();
+  }
+};
 
-await redisClient.connect();
+const clearRedis = async () => {
+  if (redisClient.isOpen) {
+    const keys = await redisClient.keys('*');
+    if (keys.length) {
+      await redisClient.del(...keys); // Spread the keys array
+    }
+  } else {
+    console.error('Redis client is closed, cannot clear keys.');
+  }
+};
 
-// import { promisify } from 'util';
-
-// const setexAsync = promisify(client.set).bind(client);
-// const getAsync = promisify(client.get).bind(client);
-
-// export { client, setexAsync, getAsync };
-export { redisClient };
+export { connectToRedis, redisClient, clearRedis };

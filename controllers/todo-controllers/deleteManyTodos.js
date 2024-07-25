@@ -1,6 +1,5 @@
 import Todo from '../../models/todo-model.js';
 import { redisClient } from '../../db/redisClient.js';
-import invalidateTodosCache from '../../db/invalidateTodosCache.js';
 
 const deleteManyTodos = async (req, res) => {
   const { type } = req.query;
@@ -22,12 +21,15 @@ const deleteManyTodos = async (req, res) => {
   const deletedTodosIds = todosToDelete.map((todo) => todo._id);
 
   const result = await Todo.deleteMany(query);
-
+  console.log(result);
+  // Delete from Redis
   await Promise.all(
     deletedTodosIds.map((todoId) => redisClient.del(`todo:${todoId}`))
   );
-
-  await invalidateTodosCache();
+  // Delete from Redis using pipeline
+  // const pipeline = redisClient.pipeline();
+  // deletedTodosIds.forEach(todoId => pipeline.del(`todo:${todoId}`));
+  // await pipeline.exec();
 
   res.json({ message: `Deleted ${result.deletedCount} ${typeMessage} todos` });
 };

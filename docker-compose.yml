@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   node-app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     restart: always
     depends_on:
       - mongo_db
@@ -13,10 +15,9 @@ services:
       - /app/node_modules
       - .:/app
     environment:
-      # - REDIS_URL=redis://redis:6379
-      # - MONGODB_URI=mongodb://admin2:adminpassword@mongo_db:27017/todo_db
       - REDIS_URL=${REDIS_URL}
       - MONGODB_URI=${MONGODB_URI}
+
   mongo_db:
     image: mongo
     restart: always
@@ -26,7 +27,7 @@ services:
       MONGO_INITDB_DATABASE: ${MONGODB_DATABASE}
     volumes:
       - mongo_db_data:/data/db
-      - ./scripts:/docker-entrypoint-initdb.d
+      # - ./scripts:/docker-entrypoint-initdb.d
 
   mongo-express:
     image: mongo-express
@@ -47,6 +48,20 @@ services:
       - '6379:6379'
     volumes:
       - redis_data:/data
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - .:/app
+    environment:
+      - NODE_ENV=test
+      - REDIS_URL=${REDIS_URL_TEST}
+      - MONGODB_URI=${MONGODB_URI_TEST}
+    depends_on:
+      - mongo_db
+      - redis
 
 volumes:
   mongo_db_data:

@@ -1,4 +1,9 @@
-const errorHandler = (controller) => (req, res, next) =>
-  controller(req, res, next).catch(next);
+const errorHandler = (controller) => async (req, res, next) => {
+  try {
+    await controller(req, res, next);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export default errorHandler;

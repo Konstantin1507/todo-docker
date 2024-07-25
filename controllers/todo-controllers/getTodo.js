@@ -12,9 +12,10 @@ const getTodo = async (req, res) => {
     const parsedCachedTodo = JSON.parse(cachedTodo);
     return res
       .status(200)
-      .json({ message: 'Cashed Todo fetched.', parsedCachedTodo });
+      .json({ message: 'Cached Todo fetched.', parsedCachedTodo });
   }
 
+  // Fetch from database if not in cache
   const todo = await Todo.findById(todoId);
 
   if (!todo) {
@@ -22,8 +23,10 @@ const getTodo = async (req, res) => {
     error.statusCode = 404;
     throw error;
   }
-  await redisClient.set(cacheKey, JSON.stringify(todo), { EX: 3600 }); // Cache for 1 hour
-  res.status(200).json(todo);
+
+  // Redis
+  await redisClient.set(cacheKey, JSON.stringify(todo), { EX: 3600 });
+  // res.status(200).json(todo);
 
   // if (todo.userId !== userId) {
   //   const error = new Error('Not authorized!');
