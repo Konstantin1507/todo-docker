@@ -10,27 +10,10 @@ const clearMongoDB = async () => {
   }
 };
 
-// const clearRedis = async () => {
-//   const keys = await redisClient.keys('*');
-//   if (keys.length) {
-//     await redisClient.del(keys);
-//   }
-// };
-
-// beforeAll(async () => {
-//   await connectToMongoDB(process.env.MONGODB_URI_TEST);
-//   await clearMongoDB();
-//   await clearRedis();
-// });
-
 beforeAll(async () => {
   console.log('Connecting to MongoDB and Redis...');
   await connectToMongoDB(process.env.MONGODB_URI_TEST);
   await connectToRedis();
-
-  console.log('Clearing MongoDB and Redis...');
-  await clearMongoDB();
-  await clearRedis();
 });
 
 beforeEach(async () => {
@@ -38,11 +21,9 @@ beforeEach(async () => {
   await clearRedis();
 });
 
-// afterAll(async () => {
-//   await clearMongoDB();
-//   await disconnectFromMongoDB();
-//   await clearRedis();
-//   await redisClient.quit();
+// afterEach(async () => {
+//   await User.deleteMany({});
+//   await redisClient.flushall();
 // });
 
 afterAll(async () => {

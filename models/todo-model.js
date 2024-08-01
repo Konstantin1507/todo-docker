@@ -9,12 +9,13 @@ const todoSchema = new Schema(
     },
     isCompleted: {
       type: Boolean,
+      default: false,
+    },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
       required: true,
     },
-    // userId: {
-    //   type: String,
-    //   required: true,
-    // },
   },
   { timestamps: true }
 );
